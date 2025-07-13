@@ -13,27 +13,34 @@ def ask_openrouter(prompt: str) -> str:
     try:
         search_results = search_web(prompt, max_results=3)
 
-        search_summary = "\n".join([
-            f"[{i+1}] {r['title']} - {r['href']}\n{r['body']}"
+        if not search_results:
+            return "Aucun résultat web trouvé."
+
+        sources = "\n\n".join([
+            f"[{i+1}] {r['title']} ({r['href']})\n{r['body']}"
             for i, r in enumerate(search_results)
         ])
 
-        full_prompt = f"""Voici des informations trouvées en ligne :
+        full_prompt = f"""Tu es un assistant doté d'une capacité à lire et interpréter des résultats de recherche web.
 
-{search_summary}
+Voici des informations extraites de recherches récentes :
 
-À partir de ces sources, réponds à la question suivante de manière synthétique et précise :
-{prompt}
-"""
+{sources}
 
+En te basant uniquement sur ces résultats, réponds à la question suivante de manière claire, synthétique et avec un ton professionnel :
+
+"{prompt}"
+
+Si les informations ci-dessus sont insuffisantes pour répondre, indique-le."""
+        
         response = openai.ChatCompletion.create(
-            model="qwen/qwen2.5-vl-32b-instruct:free",
+            model="qwen/qwq-32b:free",
             messages=[
-                {"role": "system", "content": "Tu es un assistant intelligent avec accès web."},
+                {"role": "system", "content": "Tu es un assistant expert en IA générative, capable de répondre avec clarté en te basant sur des sources web fournies."},
                 {"role": "user", "content": full_prompt}
             ]
         )
         return response["choices"][0]["message"]["content"]
 
     except Exception as e:
-        return f"Erreur : {e}"
+        return f"Erreur lors de l'appel à OpenRouter : {e}"

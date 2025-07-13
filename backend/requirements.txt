@@ -2,6 +2,6 @@ openai==0.28
 python-dotenv
 fastapi
 uvicorn[standard]
-duckduckgo_search
+google-search-results
 transformers
 torch
