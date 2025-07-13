@@ -1,0 +1,3 @@
+.env           # pour protéger ta clé API
+__pycache__/   # fichiers temporaires créés par Python
+*.pyc          # fichiers compilés inutiles
