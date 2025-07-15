@@ -182,14 +182,6 @@ Cette architecture repose sur des composants découplés, maintenables et évolu
 
 **Remarque** : La partie technique des Vision Language Models n’a pas pu être réalisée faute de matériel compatible (GPU avec au moins 8 Go de VRAM). Cette section présente donc uniquement l’approche théorique détaillée.
 
-# Intégration de VLMs dans un Pipeline de Vectorisation Multimodale pour le RAG
-
-## Objectif
-
-Ce document présente une architecture complète pour vectoriser des documents contenant à la fois du texte et des éléments visuels (images, graphiques, schémas), en s'appuyant sur des **Vision Language Models (VLMs)** dans un pipeline de type **Retrieval-Augmented Generation (RAG)**. L'approche retenue est celle de **l'encodage unifié** (méthode B), où texte et image sont traités ensemble dans un même modèle.
-
-## Pipeline proposé
-
 ### 1. Extraction multimodale
 
 Le pipeline commence par une étape d’extraction où l’on identifie les blocs de texte ainsi que les éléments visuels du document. Chaque image est associée à son paragraphe ou à sa légende la plus proche en utilisant des règles de proximité et de structure (par exemple, une image insérée entre deux paragraphes sera liée au paragraphe précédent). Ce couplage image + texte est indispensable pour la compréhension contextuelle.
@@ -216,8 +208,3 @@ Les résultats sont ensuite concaténés et transmis comme **contexte** à un **
 - **Simplicité du pipeline** : un seul modèle est utilisé pour encoder les documents et les requêtes.
 - **Pertinence des réponses** : le LLM accède à des contextes riches et structurés, même lorsqu’ils reposent sur des éléments visuels.
 - **Scalabilité** : les vecteurs peuvent être précalculés et stockés, et chaque étape du pipeline peut être containerisée ou orchestrée séparément.
-
-## Cas d’usage
-
-Cette architecture est particulièrement adaptée à des contextes professionnels où les documents contiennent une forte composante visuelle (rapports techniques, publications scientifiques, documents réglementaires) et où il est nécessaire de générer des réponses précises et contextualisées.
-****
