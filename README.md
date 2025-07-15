@@ -1,16 +1,15 @@
-# 💬 Chatbot IA Générative avec Recherche Web – Test Technique Juillet 2025
+# 💬 Chatbot IA Générative avec Recherche Web – Partie 1 – Test Technique Juillet 2025
 
-## 🎯 Objectif du projet
+## Partie 1 – Développement d’un Chatbot avec accès Internet
 
-Ce projet a été réalisé dans le cadre d’un test technique pour un poste d’**Ingénieur IA Générative**.  
-L’objectif était de développer un **chatbot capable d’interroger un LLM** tout en intégrant dynamiquement des **résultats de recherche web récents**, afin de fournir des réponses contextualisées et à jour.
+L’objectif de cette première partie était de concevoir un chatbot capable d’interroger un modèle de langage (LLM) tout en intégrant des résultats de recherche web récents afin de fournir des réponses enrichies, pertinentes et actualisées.
 
-> ✅ Requête test attendue :
+> Requête test à implémenter :
 > *“Quels sont les derniers développements en IA générative annoncés cette semaine ? Donne-moi 3 exemples concrets avec leurs sources.”*
 
 Le projet inclut :
 - Une API REST backend construite avec **FastAPI**
-- Une logique de **recherche web automatique**
+- Une logique de **recherche web automatique via SerpAPI**
 - Deux modes de génération :
   - Un modèle cloud via **OpenRouter**
   - Un modèle local via **Hugging Face Transformers**
@@ -23,22 +22,23 @@ Le projet inclut :
 |----------------|-----------------------------------------------------|
 | **Langage**    | Python 3.10+                                        |
 | **Framework API** | FastAPI + Uvicorn                              |
-| **Recherche Web** | `duckduckgo_search` (API gratuite DuckDuckGo)  |
-| **LLM Cloud**  | `qwen/qwen2.5-vl-32b-instruct:free` (OpenRouter)   |
+| **Recherche Web** | `SerpAPI`                                       |
+| **LLM Cloud**  | `qwen/qwen2.5-vl-32b-instruct:free`, puis `openchat/openchat-3.5` |
 | **LLM Local**  | `microsoft/phi-2` via HuggingFace Transformers     |
-| **Frontend**   | *(à venir)* – prévu en React                       |
+| **Frontend**   | React (Create React App)
 
 ---
 
 ## 🚀 Fonctionnalités principales
 
-- 🔎 **Recherche web dynamique** : intégration des résultats dans les prompts
-- 🤖 **Double mode de réponse** :
-  - `/ask` → via modèle distant (OpenRouter)
-  - `/ask-local` → via modèle local (Hugging Face)
-- 🧠 **Prompt enrichi** : les résultats web sont injectés dans la requête du LLM
-- 🔐 **Sécurité** : les clés API sont stockées dans un fichier `.env` non versionné
+- 🔎 **Recherche web en direct via SerpAPI**
+- 🤖 **Deux modes de génération** :
+  - `/ask` → appel au LLM via OpenRouter (cloud)
+  - `/ask-local` → appel à un LLM local exécuté en Python
+- 🧠 **Prompt enrichi** : les résultats web sont injectés dans le contexte du modèle
+- 🔐 **Sécurisation** des clés API avec `.env`
 - 🧪 **Interface Swagger** pour tester facilement l’API
+- 🖥️ **Interface React** fonctionnelle côté utilisateur
 
 ---
 
@@ -52,10 +52,10 @@ Requête envoyée :
 ```
 
 Processus :
-1. Recherche web automatique (DuckDuckGo)
+1. Recherche web automatique (SerpAPI)
 2. Résumé des 3 meilleurs résultats (titre, URL, extrait)
-3. Construction d’un **prompt enrichi**
-4. Envoi au modèle (local ou distant)
+3. Construction d’un prompt enrichi
+4. Envoi au modèle (cloud ou local)
 5. Réponse générée et retournée à l’utilisateur
 
 ---
@@ -73,72 +73,61 @@ backend/
 ├── .env
 ├── .gitignore
 ├── requirements.txt
+
+frontend/
+├── public/
+├── src/
+│   ├── App.jsx
+│   └── index.js
 ```
 
 ---
 
-## ⚙️ Installation du projet
+## ⚙️ Installation backend
 
-### 🧱 1. Cloner le dépôt
 ```bash
 git clone https://github.com/ton-pseudo/ton-repo.git
 cd ton-repo/backend
-```
-
-### 🐍 2. Créer un environnement virtuel Python
-```bash
 python -m venv venv
 source venv/bin/activate  # ou venv\Scripts\activate sous Windows
-```
-
-### 📦 3. Installer les dépendances
-```bash
 pip install -r requirements.txt
 ```
 
-### 🔐 4. Ajouter le fichier `.env`
+### 🔐 Ajouter le fichier `.env`
+
 ```env
 OPENROUTER_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+SERPAPI_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
----
-
-## ▶️ Lancement de l’API
+### ▶️ Lancer le backend
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Swagger : http://127.0.0.1:8000/docs
+Swagger disponible sur : http://127.0.0.1:8000/docs
 
 ---
 
-## 📤 Endpoints disponibles
+## ⚙️ Lancer le frontend
 
-### `/ask` – version cloud (OpenRouter)
-```json
-POST /ask
-{
-  "prompt": "Quelle est l'utilité de l'IA générative dans la médecine ?"
-}
+```bash
+cd ../frontend
+npm install
+npm start
 ```
 
-### `/ask-local` – version locale (Phi-2)
-```json
-POST /ask-local
-{
-  "prompt": "Quels sont les avantages de l’IA en éducation ?"
-}
-```
+Accessible sur : http://localhost:3000
 
 ---
 
 ## 🔎 Fonctionnement interne
 
-1. Appel à `search_web(prompt)`
+1. Appel à `search_web(prompt)` via SerpAPI
 2. Résultats injectés dans un prompt enrichi
-3. Envoi au modèle (cloud ou local)
-4. Réponse générée à partir des sources web
+3. Envoi au modèle (OpenRouter ou local)
+4. Génération de réponse basée sur les sources
 
 ---
 
@@ -160,38 +149,30 @@ StableLM 2 permet un meilleur contrôle générationnel...
 Quels sont les derniers développements en IA générative cette semaine ?
 ```
 
----
+## Partie 2 – Questions théoriques sur le chatbot avec accès internet
 
-## 💡 Bonus techniques inclus
+Dans le cadre de ce projet, je propose un plan de déploiement sur Azure conçu pour répondre aux exigences d’un grand groupe en matière de scalabilité, de sécurité, de fiabilité et de maintenabilité. L’objectif est d’anticiper une mise en production réaliste et professionnelle, en structurant chaque étape du déploiement et en justifiant les choix techniques retenus.
 
-| Élément                            | Implémenté |
-|------------------------------------|------------|
-| Intégration des résultats web      | ✅         |
-| Modèle cloud via OpenRouter        | ✅         |
-| Modèle local via Hugging Face      | ✅         |
-| Fonctionnement hors-ligne          | ✅         |
-| Swagger UI                         | ✅         |
-| Séparation `.env` / `.gitignore`  | ✅         |
+La solution développée repose sur deux composants bien distincts. D’une part, un backend en Python (FastAPI) chargé de la logique métier, des appels au LLM via OpenRouter, et de la recherche web via une API comme SerpAPI ou DuckDuckGo. D’autre part, un frontend en React destiné à fournir à l’utilisateur une interface claire et ergonomique pour interagir avec le chatbot.
 
----
+Je recommande une séparation stricte entre le frontend et le backend, car elle garantit deux avantages majeurs. D’abord, cela permet une scalabilité indépendante de chaque composant : en cas de forte charge sur l’API (par exemple un pic de requêtes vers OpenRouter), seul le backend devra être renforcé. Ensuite, cela assure une séparation nette des responsabilités : le frontend se concentre sur l’affichage et l’expérience utilisateur, tandis que le backend gère les traitements, les appels API, les erreurs et la sécurité. Cette architecture modulaire facilite également les mises à jour, les tests et la maintenance.
 
-## 📚 Améliorations prévues
+Pour héberger cette solution sur Azure, je préconise la création des ressources suivantes :
 
-- 🌐 Frontend React
-- ☁️ Déploiement Azure (Partie 2)
-- 🖼️ Intégration VLM (Partie 3)
+1. **Azure App Service** (Plan Standard S1) pour le backend Python. Ce service permet un déploiement simple, une montée en charge automatique, une intégration native avec Key Vault et Application Insights, et offre une disponibilité de 99,95 %. Le plan gratuit ne propose pas ces fonctionnalités critiques. Le plan S1 constitue donc un bon compromis entre performance et coût, estimé à 77,939 euros par mois.
 
----
+2. **Azure Static Web Apps** (Plan Standard) pour le frontend React. Ce service fournit un hébergement statique performant, via un CDN global, avec déploiement automatisé depuis GitHub, certificat SSL intégré et compatibilité avec les domaines personnalisés. Le plan Standard est adapté à une diffusion fiable et sécurisée, avec un coût de 84,558 euros par mois.
 
-## 👤 Réalisé par
+3. **Azure Key Vault** (niveau Standard) pour stocker de manière sécurisée les secrets, tels que les clés API utilisées par le backend. L'accès aux secrets s’effectue via une **Managed Identity** configurée sur App Service. Cette méthode permet d’éviter tout mot de passe ou clé dans le code source. À raison de deux lectures de secret par requête (OpenRouter et SerpAPI), avec une hypothèse de 2 000 requêtes par jour, on atteint 4 000 lectures par jour, soit 120 000 lectures par mois. Le tarif étant de 0,026 € pour 10 000 opérations, le coût mensuel est de 0,312 €.
 
-**Théo Labat**  
-Test Technique – Ingénieur IA Générative – Juillet 2025
+4. **Azure Application Insights** pour le monitoring du backend. Ce service permet de collecter automatiquement les erreurs, les exceptions, les temps de réponse et les journaux d’activité. En moyenne, chaque requête génère une quinzaine d’événements (appels API, logs d’entrée/sortie, erreurs potentielles, etc.). Avec 2 000 requêtes par jour, cela représente environ 30 000 événements quotidiens, soit entre 0,5 et 0,9 Go de données par mois. Le quota gratuit de 5 Go/mois permet de couvrir ces besoins sans surcoût.
 
----
+En ce qui concerne la gestion des accès, je propose de suivre une logique de moindre privilège. Les rôles “Contributor” seraient affectés aux développeurs sur le groupe de ressources Azure, tandis que l’accès aux secrets serait restreint via un rôle “Key Vault Reader” attribué à l’App Service via une identité managée. GitHub Actions disposerait d’un accès délégué à App Service et Static Web Apps via un service principal sécurisé ou OpenID Connect, pour automatiser les déploiements sans manipulation manuelle de clés.
 
-## 📝 Remarques
+La mise en production serait automatisée via GitHub Actions. Le pipeline du backend inclurait une étape de **linting** avec *flake8*, afin de garantir la conformité du code aux standards Python (structure, lisibilité, conventions). Ensuite, les **tests unitaires** seraient exécutés via *pytest*, pour valider les comportements critiques (gestion des erreurs, cohérence des réponses, etc.). En cas de succès, le déploiement serait automatiquement déclenché vers Azure App Service. Le frontend suivrait un pipeline similaire : build React puis déploiement sur Static Web Apps.
 
-- Aucune clé API n’est versionnée
-- Aucune solution payante n’a été utilisée
-- Toutes les hypothèses sont documentées dans ce fichier
+Pour garantir la stabilité de l’application en production, Application Insights assurerait une supervision continue. Des alertes seraient configurées pour remonter les anomalies critiques (erreurs 5xx, lenteurs, exceptions non gérées). La gestion des erreurs serait centralisée dans le backend : chaque appel critique serait encapsulé dans un bloc `try/except`, permettant de logguer les incidents (type d’exception, code retour, temps écoulé, etc.), tout en renvoyant un message utilisateur clair.
+
+Enfin, une stratégie de sauvegarde et de reprise serait mise en place. Le code est versionné sur GitHub, les secrets sont centralisés dans Key Vault, et la configuration Azure est exportable via CLI. En cas de besoin, une restauration rapide serait possible à partir de scripts Terraform ou ARM. Les journaux pourraient également être archivés dans Azure Blob Storage pour conservation longue durée.
+
+Cette architecture repose sur des composants découplés, maintenables et évolutifs. Elle offre une séparation claire des responsabilités, une sécurité robuste, une supervision fiable et un déploiement entièrement automatisé. Le tout pour un coût total estimé à **162,809 euros par mois**, ce qui reste cohérent et justifié pour un déploiement professionnel au sein d’un grand groupe.
