@@ -151,15 +151,15 @@ Quels sont les derniers développements en IA générative cette semaine ?
 
 ## Partie 2 – Questions théoriques sur le chatbot avec accès internet
 
-Dans le cadre de ce projet, je propose un plan de déploiement sur Azure conçu pour répondre aux exigences d’un grand groupe en matière de scalabilité, de sécurité, de fiabilité et de maintenabilité. L’objectif est d’anticiper une mise en production réaliste et professionnelle, en structurant chaque étape du déploiement et en justifiant les choix techniques retenus.
+Dans le cadre de ce projet, je propose un plan de déploiement sur Azure conçu pour répondre aux exigences d’un grand groupe en matière de scalabilité, de sécurité et de fiabilité. L’objectif est d’anticiper une mise en production réaliste et professionnelle, en structurant chaque étape du déploiement et en justifiant les choix techniques retenus.
 
-La solution développée repose sur deux composants bien distincts. D’une part, un backend en Python (FastAPI) chargé de la logique métier, des appels au LLM via OpenRouter, et de la recherche web via une API comme SerpAPI ou DuckDuckGo. D’autre part, un frontend en React destiné à fournir à l’utilisateur une interface claire et ergonomique pour interagir avec le chatbot.
+La solution développée repose sur deux composants bien distincts. D’une part, un backend en Python (FastAPI) chargé de la logique métier, des appels au LLM via OpenRouter, et de la recherche web via une API comme SerpAPI. D’autre part, un frontend en React destiné à fournir à l’utilisateur une interface claire et ergonomique pour interagir avec le chatbot.
 
 Je recommande une séparation stricte entre le frontend et le backend, car elle garantit deux avantages majeurs. D’abord, cela permet une scalabilité indépendante de chaque composant : en cas de forte charge sur l’API (par exemple un pic de requêtes vers OpenRouter), seul le backend devra être renforcé. Ensuite, cela assure une séparation nette des responsabilités : le frontend se concentre sur l’affichage et l’expérience utilisateur, tandis que le backend gère les traitements, les appels API, les erreurs et la sécurité. Cette architecture modulaire facilite également les mises à jour, les tests et la maintenance.
 
 Pour héberger cette solution sur Azure, je préconise la création des ressources suivantes :
 
-1. **Azure App Service** (Plan Standard S1) pour le backend Python. Ce service permet un déploiement simple, une montée en charge automatique, une intégration native avec Key Vault et Application Insights, et offre une disponibilité de 99,95 %. Le plan gratuit ne propose pas ces fonctionnalités critiques. Le plan S1 constitue donc un bon compromis entre performance et coût, estimé à 77,939 euros par mois.
+1. **Azure App Service** (Plan Standard S1) pour le backend Python. Ce service permet un déploiement simple, une montée en charge automatique, une intégration native avec Key Vault et Application Insights et offre une disponibilité de 99,95 %. Le plan gratuit ne propose pas ces fonctionnalités critiques. Le plan S1 constitue donc un bon compromis entre performance et coût, estimé à 77,939 euros par mois.
 
 2. **Azure Static Web Apps** (Plan Standard) pour le frontend React. Ce service fournit un hébergement statique performant, via un CDN global, avec déploiement automatisé depuis GitHub, certificat SSL intégré et compatibilité avec les domaines personnalisés. Le plan Standard est adapté à une diffusion fiable et sécurisée, avec un coût de 84,558 euros par mois.
 
@@ -167,20 +167,20 @@ Pour héberger cette solution sur Azure, je préconise la création des ressourc
 
 4. **Azure Application Insights** pour le monitoring du backend. Ce service permet de collecter automatiquement les erreurs, les exceptions, les temps de réponse et les journaux d’activité. En moyenne, chaque requête génère une quinzaine d’événements (appels API, logs d’entrée/sortie, erreurs potentielles, etc.). Avec 2 000 requêtes par jour, cela représente environ 30 000 événements quotidiens, soit entre 0,5 et 0,9 Go de données par mois. Le quota gratuit de 5 Go/mois permet de couvrir ces besoins sans surcoût.
 
-En ce qui concerne la gestion des accès, je propose de suivre une logique de moindre privilège. Les rôles “Contributor” seraient affectés aux développeurs sur le groupe de ressources Azure, tandis que l’accès aux secrets serait restreint via un rôle “Key Vault Reader” attribué à l’App Service via une identité managée. GitHub Actions disposerait d’un accès délégué à App Service et Static Web Apps via un service principal sécurisé ou OpenID Connect, pour automatiser les déploiements sans manipulation manuelle de clés.
+En ce qui concerne la gestion des accès, je propose de suivre une logique où je restreints les droits d'accès pour garantir la sécurité. Les rôles “Contributor” seraient affectés aux développeurs sur le groupe de ressources Azure, tandis que l’accès aux secrets serait restreint via un rôle “Key Vault Reader” attribué à l’App Service via une identité managée. GitHub Actions disposerait d’un accès délégué à App Service et Static Web Apps via un service principal sécurisé ou OpenID Connect, pour automatiser les déploiements sans manipulation manuelle de clés.
 
 La mise en production serait automatisée via GitHub Actions. Le pipeline du backend inclurait une étape de **linting** avec *flake8*, afin de garantir la conformité du code aux standards Python (structure, lisibilité, conventions). Ensuite, les **tests unitaires** seraient exécutés via *pytest*, pour valider les comportements critiques (gestion des erreurs, cohérence des réponses, etc.). En cas de succès, le déploiement serait automatiquement déclenché vers Azure App Service. Le frontend suivrait un pipeline similaire : build React puis déploiement sur Static Web Apps.
 
 Pour garantir la stabilité de l’application en production, Application Insights assurerait une supervision continue. Des alertes seraient configurées pour remonter les anomalies critiques (erreurs 5xx, lenteurs, exceptions non gérées). La gestion des erreurs serait centralisée dans le backend : chaque appel critique serait encapsulé dans un bloc `try/except`, permettant de logguer les incidents (type d’exception, code retour, temps écoulé, etc.), tout en renvoyant un message utilisateur clair.
 
-Enfin, une stratégie de sauvegarde et de reprise serait mise en place. Le code est versionné sur GitHub, les secrets sont centralisés dans Key Vault, et la configuration Azure est exportable via CLI. En cas de besoin, une restauration rapide serait possible à partir de scripts Terraform ou ARM. Les journaux pourraient également être archivés dans Azure Blob Storage pour conservation longue durée.
+Enfin, une stratégie de sauvegarde et de reprise serait mise en place. Le code est versionné sur GitHub, les secrets sont centralisés dans Key Vault et la configuration Azure est exportable via CLI. En cas de besoin, une restauration rapide serait possible à partir de scripts Terraform ou ARM. Les journaux pourraient également être archivés dans Azure Blob Storage pour conservation longue durée.
 
-Cette architecture repose sur des composants découplés, maintenables et évolutifs. Elle offre une séparation claire des responsabilités, une sécurité robuste, une supervision fiable et un déploiement entièrement automatisé. Le tout pour un coût total estimé à **162,809 euros par mois**, ce qui reste cohérent et justifié pour un déploiement professionnel au sein d’un grand groupe.
+Cette architecture offre une séparation claire des responsabilités, une sécurité robuste, une supervision fiable et un déploiement entièrement automatisé. Le tout pour un coût total estimé à **162,809 euros par mois**.
 
 
 ## Partie 3 – Vision Language Models
 
-**Remarque** : La partie technique des Vision Language Models n’a pas pu être réalisée faute de matériel compatible (GPU avec au moins 8 Go de VRAM). Cette section présente donc uniquement l’approche théorique détaillée.
+**Remarque** : Ne possédant pas le matériel technique nécessaire, je n'ai pas pu réalisé la partie technique. J'ai tout de même souhaité faire la partie théorique que vous trouverez ci-dessous.
 
 ### 1. Extraction multimodale
 
@@ -194,11 +194,11 @@ Contrairement à une approche qui vectorise séparément texte et image, puis fu
 
 ### 3. Indexation vectorielle
 
-Les vecteurs produits par le VLM sont stockés dans une base vectorielle (telle que FAISS, Qdrant ou Weaviate). Chaque vecteur est enrichi de métadonnées (page, source, type de contenu, etc.) permettant une recherche plus fine. Les documents sont découpés en chunks multimodaux pour garantir la granularité des recherches.
+Les vecteurs produits par le VLM sont stockés dans une base vectorielle (telle que FAISS, Qdrant ou Weaviate). Chaque vecteur est enrichi de métadonnées (page, source, type de contenu, etc.) permettant une recherche plus fine. Les documents sont découpés en chunks.
 
 ### 4. Recherche et génération (RAG)
 
-Lorsqu’un utilisateur pose une question en langage naturel, celle-ci est encodée avec le **même VLM** que celui utilisé pour les documents. La base vectorielle est interrogée par similarité pour identifier les chunks multimodaux les plus proches sémantiquement.
+Lorsqu’un utilisateur pose une question en langage naturel, celle-ci est encodée avec le **même VLM** que celui utilisé pour les documents. La base vectorielle est interrogée par similarité pour identifier les chunks les plus proches sémantiquement.
 
 Les résultats sont ensuite concaténés et transmis comme **contexte** à un **modèle génératif** (par exemple GPT, Mistral, Qwen), qui peut alors produire une réponse ancrée dans les documents, en tenant compte à la fois du texte et des éléments visuels.
 
