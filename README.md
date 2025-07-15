@@ -176,3 +176,48 @@ Pour garantir la stabilité de l’application en production, Application Insigh
 Enfin, une stratégie de sauvegarde et de reprise serait mise en place. Le code est versionné sur GitHub, les secrets sont centralisés dans Key Vault, et la configuration Azure est exportable via CLI. En cas de besoin, une restauration rapide serait possible à partir de scripts Terraform ou ARM. Les journaux pourraient également être archivés dans Azure Blob Storage pour conservation longue durée.
 
 Cette architecture repose sur des composants découplés, maintenables et évolutifs. Elle offre une séparation claire des responsabilités, une sécurité robuste, une supervision fiable et un déploiement entièrement automatisé. Le tout pour un coût total estimé à **162,809 euros par mois**, ce qui reste cohérent et justifié pour un déploiement professionnel au sein d’un grand groupe.
+
+
+## Partie 3 – Vision Language Models
+
+**Remarque** : La partie technique des Vision Language Models n’a pas pu être réalisée faute de matériel compatible (GPU avec au moins 8 Go de VRAM). Cette section présente donc uniquement l’approche théorique détaillée.
+
+# Intégration de VLMs dans un Pipeline de Vectorisation Multimodale pour le RAG
+
+## Objectif
+
+Ce document présente une architecture complète pour vectoriser des documents contenant à la fois du texte et des éléments visuels (images, graphiques, schémas), en s'appuyant sur des **Vision Language Models (VLMs)** dans un pipeline de type **Retrieval-Augmented Generation (RAG)**. L'approche retenue est celle de **l'encodage unifié** (méthode B), où texte et image sont traités ensemble dans un même modèle.
+
+## Pipeline proposé
+
+### 1. Extraction multimodale
+
+Le pipeline commence par une étape d’extraction où l’on identifie les blocs de texte ainsi que les éléments visuels du document. Chaque image est associée à son paragraphe ou à sa légende la plus proche en utilisant des règles de proximité et de structure (par exemple, une image insérée entre deux paragraphes sera liée au paragraphe précédent). Ce couplage image + texte est indispensable pour la compréhension contextuelle.
+
+### 2. Encodage avec un VLM
+
+Chaque couple image + texte est ensuite envoyé à un **Vision Language Model** (par exemple : Qwen-VL, BLIP-2, Kosmos-2). Ce modèle prend les deux modalités en entrée et génère un **embedding unifié**, c’est-à-dire une représentation vectorielle unique qui capture à la fois le contenu visuel, le contenu textuel, et surtout leur lien sémantique.
+
+Contrairement à une approche qui vectorise séparément texte et image, puis fusionne les deux vecteurs, l’encodage unifié permet d’obtenir directement une représentation cohérente et intégrée.
+
+### 3. Indexation vectorielle
+
+Les vecteurs produits par le VLM sont stockés dans une base vectorielle (telle que FAISS, Qdrant ou Weaviate). Chaque vecteur est enrichi de métadonnées (page, source, type de contenu, etc.) permettant une recherche plus fine. Les documents sont découpés en chunks multimodaux pour garantir la granularité des recherches.
+
+### 4. Recherche et génération (RAG)
+
+Lorsqu’un utilisateur pose une question en langage naturel, celle-ci est encodée avec le **même VLM** que celui utilisé pour les documents. La base vectorielle est interrogée par similarité pour identifier les chunks multimodaux les plus proches sémantiquement.
+
+Les résultats sont ensuite concaténés et transmis comme **contexte** à un **modèle génératif** (par exemple GPT, Mistral, Qwen), qui peut alors produire une réponse ancrée dans les documents, en tenant compte à la fois du texte et des éléments visuels.
+
+## Avantages de l’approche
+
+- **Cohérence sémantique** : l’encodage unifié garantit que les relations entre texte et image sont conservées dès l’entrée du modèle.
+- **Simplicité du pipeline** : un seul modèle est utilisé pour encoder les documents et les requêtes.
+- **Pertinence des réponses** : le LLM accède à des contextes riches et structurés, même lorsqu’ils reposent sur des éléments visuels.
+- **Scalabilité** : les vecteurs peuvent être précalculés et stockés, et chaque étape du pipeline peut être containerisée ou orchestrée séparément.
+
+## Cas d’usage
+
+Cette architecture est particulièrement adaptée à des contextes professionnels où les documents contiennent une forte composante visuelle (rapports techniques, publications scientifiques, documents réglementaires) et où il est nécessaire de générer des réponses précises et contextualisées.
+****
