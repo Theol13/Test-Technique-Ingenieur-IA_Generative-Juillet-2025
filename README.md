@@ -1,4 +1,4 @@
-# 💬 Chatbot IA Générative avec Recherche Web – Partie 1 – Test Technique Juillet 2025
+#  Chatbot IA Générative avec Recherche Web – Partie 1 – Test Technique Juillet 2025
 
 ## Partie 1 – Développement d’un Chatbot avec accès Internet
 
