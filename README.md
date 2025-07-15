@@ -16,7 +16,7 @@ Le projet inclut :
 
 ---
 
-## 🧱 Stack technique
+##  Stack technique
 
 | Composant      | Outil utilisé                                       |
 |----------------|-----------------------------------------------------|
@@ -29,20 +29,20 @@ Le projet inclut :
 
 ---
 
-## 🚀 Fonctionnalités principales
+##  Fonctionnalités principales
 
-- 🔎 **Recherche web en direct via SerpAPI**
-- 🤖 **Deux modes de génération** :
+-  **Recherche web en direct via SerpAPI**
+-  **Deux modes de génération** :
   - `/ask` → appel au LLM via OpenRouter (cloud)
   - `/ask-local` → appel à un LLM local exécuté en Python
-- 🧠 **Prompt enrichi** : les résultats web sont injectés dans le contexte du modèle
-- 🔐 **Sécurisation** des clés API avec `.env`
-- 🧪 **Interface Swagger** pour tester facilement l’API
-- 🖥️ **Interface React** fonctionnelle côté utilisateur
+-  **Prompt enrichi** : les résultats web sont injectés dans le contexte du modèle
+-  **Sécurisation** des clés API avec `.env`
+-  **Interface Swagger** pour tester facilement l’API
+-  **Interface React** fonctionnelle côté utilisateur
 
 ---
 
-## 🧪 Exemple de fonctionnement
+##  Exemple de fonctionnement
 
 Requête envoyée :
 ```json
@@ -60,7 +60,7 @@ Processus :
 
 ---
 
-## 📂 Structure du projet
+##  Structure du projet
 
 ```
 backend/
@@ -83,7 +83,7 @@ frontend/
 
 ---
 
-## ⚙️ Installation backend
+##  Installation backend
 
 ```bash
 git clone https://github.com/ton-pseudo/ton-repo.git
@@ -93,14 +93,14 @@ source venv/bin/activate  # ou venv\Scripts\activate sous Windows
 pip install -r requirements.txt
 ```
 
-### 🔐 Ajouter le fichier `.env`
+###  Ajouter le fichier `.env`
 
 ```env
 OPENROUTER_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
 SERPAPI_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### ▶️ Lancer le backend
+###  Lancer le backend
 
 ```bash
 uvicorn app.main:app --reload
@@ -110,7 +110,7 @@ Swagger disponible sur : http://127.0.0.1:8000/docs
 
 ---
 
-## ⚙️ Lancer le frontend
+##  Lancer le frontend
 
 ```bash
 cd ../frontend
@@ -122,7 +122,7 @@ Accessible sur : http://localhost:3000
 
 ---
 
-## 🔎 Fonctionnement interne
+##  Fonctionnement interne
 
 1. Appel à `search_web(prompt)` via SerpAPI
 2. Résultats injectés dans un prompt enrichi
@@ -131,7 +131,7 @@ Accessible sur : http://localhost:3000
 
 ---
 
-## 📌 Exemple de prompt généré
+##  Exemple de prompt généré
 
 ```
 Voici des informations trouvées en ligne :
